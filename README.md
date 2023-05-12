@@ -1,3 +1,12 @@
+<div align="center">
+  <br>
+  <h1>Yolov7 Poker Hands Classification</h1>
+</div>
+<br>
+</p>
+
+This repo contains a use case of Yolo v7 do detect and recognize poker cards in order to classifly a whole hand of cards. Further developments might include real-time suggestions based on the cards present in the player hand and on the table.
+
 # Introduction to Yolo
 YOLO is a popular object detection algorithm that can recognize and localize multiple objects within an image or video in real-time. The YOLO network uses a single convolutional neural network (CNN) architecture to simultaneously perform object detection and classification.
 
