@@ -1,288 +1,420 @@
-# Official YOLOv7
+# Introduction to Yolo
+YOLO is a popular object detection algorithm that can recognize and localize multiple objects within an image or video in real-time. The YOLO network uses a single convolutional neural network (CNN) architecture to simultaneously perform object detection and classification.
 
-Implementation of paper - [YOLOv7: Trainable bag-of-freebies sets new state-of-the-art for real-time object detectors](https://arxiv.org/abs/2207.02696)
+The YOLO network divides an input image into a grid of cells and predicts bounding boxes, objectness scores, and class probabilities for each cell. Each bounding box is represented by five values: the x and y coordinates of the box's center, the box's width and height, and a confidence score that indicates the probability that the box contains an object. The objectness score indicates the probability that an object is present in the box, and the class probabilities represent the probabilities of the box containing objects of different classes.
 
-[![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/yolov7-trainable-bag-of-freebies-sets-new/real-time-object-detection-on-coco)](https://paperswithcode.com/sota/real-time-object-detection-on-coco?p=yolov7-trainable-bag-of-freebies-sets-new)
-[![Hugging Face Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Spaces-blue)](https://huggingface.co/spaces/akhaliq/yolov7)
-<a href="https://colab.research.google.com/gist/AlexeyAB/b769f5795e65fdab80086f6cb7940dae/yolov7detection.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"></a>
-[![arxiv.org](http://img.shields.io/badge/cs.CV-arXiv%3A2207.02696-B31B1B.svg)](https://arxiv.org/abs/2207.02696)
+The YOLO network uses a variant of the Darknet architecture, which consists of 53 convolutional layers followed by several fully connected layers. The network architecture is designed to optimize the trade-off between accuracy and speed, allowing the algorithm to achieve real-time performance even on low-powered devices.
 
-<div align="center">
-    <a href="./">
-        <img src="./figure/performance.png" width="79%"/>
-    </a>
-</div>
+Training the YOLO network involves using a large dataset of annotated images to optimize the network's parameters through backpropagation. During training, the network learns to predict bounding boxes and class probabilities that accurately match the ground truth annotations.
 
-## Web Demo
+Overall, YOLO is a highly effective and efficient object detection algorithm that has been widely used in a variety of applications, including autonomous vehicles, surveillance systems, and image and video analysis.
 
-- Integrated into [Huggingface Spaces 🤗](https://huggingface.co/spaces/akhaliq/yolov7) using Gradio. Try out the Web Demo [![Hugging Face Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Spaces-blue)](https://huggingface.co/spaces/akhaliq/yolov7)
+## Yolo 7
+YOLOv7 provides a greatly improved real-time object detection accuracy without increasing the inference costs. When compared to other known object detectors, YOLOv7 can effectively reduce about 40% parameters and 50% computation of state-of-the-art real-time object detections, and achieve faster inference speed and higher detection accuracy. In general, YOLOv7 provides a faster and stronger network architecture that provides a more effective feature integration method, more accurate object detection performance, a more robust loss function, and an increased label assignment and model training efficiency. As a result, YOLOv7 requires several times cheaper computing hardware than other deep learning models. It can be trained much faster on small datasets without any pre-trained weights.
 
-## Performance 
+## Clone Yolo v7 repo
 
-MS COCO
+The repository being cloned is a fork of the [Yolov7](https://github.com/WongKinYiu/yolov7) repository with customized settings.
+The following settings have been customized for the purpose of this project:
+- `cfg/training/yolov7.yaml` update the classes number to 52
+- `data/coco.yaml`: changed the path of the datasets and updated the number and value of the classes
+- `data/data.yaml`: it's a copy of the coco.yaml file; such copy was created because using the original file would trigger some tasks specific for the coco dataset
+- `requirements.txt`: replace the default torch version with the CUDA enabled one
 
-| Model | Test Size | AP<sup>test</sup> | AP<sub>50</sub><sup>test</sup> | AP<sub>75</sub><sup>test</sup> | batch 1 fps | batch 32 average time |
-| :-- | :-: | :-: | :-: | :-: | :-: | :-: |
-| [**YOLOv7**](https://github.com/WongKinYiu/yolov7/releases/download/v0.1/yolov7.pt) | 640 | **51.4%** | **69.7%** | **55.9%** | 161 *fps* | 2.8 *ms* |
-| [**YOLOv7-X**](https://github.com/WongKinYiu/yolov7/releases/download/v0.1/yolov7x.pt) | 640 | **53.1%** | **71.2%** | **57.8%** | 114 *fps* | 4.3 *ms* |
-|  |  |  |  |  |  |  |
-| [**YOLOv7-W6**](https://github.com/WongKinYiu/yolov7/releases/download/v0.1/yolov7-w6.pt) | 1280 | **54.9%** | **72.6%** | **60.1%** | 84 *fps* | 7.6 *ms* |
-| [**YOLOv7-E6**](https://github.com/WongKinYiu/yolov7/releases/download/v0.1/yolov7-e6.pt) | 1280 | **56.0%** | **73.5%** | **61.2%** | 56 *fps* | 12.3 *ms* |
-| [**YOLOv7-D6**](https://github.com/WongKinYiu/yolov7/releases/download/v0.1/yolov7-d6.pt) | 1280 | **56.6%** | **74.0%** | **61.8%** | 44 *fps* | 15.0 *ms* |
-| [**YOLOv7-E6E**](https://github.com/WongKinYiu/yolov7/releases/download/v0.1/yolov7-e6e.pt) | 1280 | **56.8%** | **74.4%** | **62.1%** | 36 *fps* | 18.7 *ms* |
 
-## Installation
-
-Docker environment (recommended)
-<details><summary> <b>Expand</b> </summary>
-
-``` shell
-# create the docker container, you can change the share memory size if you have more.
-nvidia-docker run --name yolov7 -it -v your_coco_path/:/coco/ -v your_code_path/:/yolov7 --shm-size=64g nvcr.io/nvidia/pytorch:21.08-py3
-
-# apt install required packages
-apt update
-apt install -y zip htop screen libgl1-mesa-glx
-
-# pip install required packages
-pip install seaborn thop
-
-# go to code folder
-cd /yolov7
+```python
+!git clone https://github.com/Filocava99/Yolov7-Poker-Hands-classification.git yolov7
 ```
 
-</details>
+## Libraries import
 
-## Testing
+Before training the model all the required modules have to be installed
 
-[`yolov7.pt`](https://github.com/WongKinYiu/yolov7/releases/download/v0.1/yolov7.pt) [`yolov7x.pt`](https://github.com/WongKinYiu/yolov7/releases/download/v0.1/yolov7x.pt) [`yolov7-w6.pt`](https://github.com/WongKinYiu/yolov7/releases/download/v0.1/yolov7-w6.pt) [`yolov7-e6.pt`](https://github.com/WongKinYiu/yolov7/releases/download/v0.1/yolov7-e6.pt) [`yolov7-d6.pt`](https://github.com/WongKinYiu/yolov7/releases/download/v0.1/yolov7-d6.pt) [`yolov7-e6e.pt`](https://github.com/WongKinYiu/yolov7/releases/download/v0.1/yolov7-e6e.pt)
 
-``` shell
-python test.py --data data/coco.yaml --img 640 --batch 32 --conf 0.001 --iou 0.65 --device 0 --weights yolov7.pt --name yolov7_640_val
+```python
+!pip install -r .//yolov7//requirements.txt
 ```
 
-You will get the results:
+To install pytorch with CUDA support run the following cell:
 
-```
- Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.51206
- Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.69730
- Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.55521
- Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.35247
- Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.55937
- Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.66693
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.38453
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.63765
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.68772
- Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.53766
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.73549
- Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.83868
+
+```python
+!pip install torch==1.13.1+cu116 torchvision==0.14.1+cu116 torchaudio==0.13.1 --extra-index-url https://download.pytorch.org/whl/cu116
 ```
 
-To measure accuracy, download [COCO-annotations for Pycocotools](http://images.cocodataset.org/annotations/annotations_trainval2017.zip) to the `./coco/annotations/instances_val2017.json`
 
-## Training
-
-Data preparation
-
-``` shell
-bash scripts/get_coco.sh
+```python
+import requests, zipfile, io, shutil, os, torch, pycocotools, yaml
+import pandas as pd
+import ipywidgets as widgets
+import numpy as np
+import cv2
 ```
 
-* Download MS COCO dataset images ([train](http://images.cocodataset.org/zips/train2017.zip), [val](http://images.cocodataset.org/zips/val2017.zip), [test](http://images.cocodataset.org/zips/test2017.zip)) and [labels](https://github.com/WongKinYiu/yolov7/releases/download/v0.1/coco2017labels-segments.zip). If you have previously used a different version of YOLO, we strongly recommend that you delete `train2017.cache` and `val2017.cache` files, and redownload [labels](https://github.com/WongKinYiu/yolov7/releases/download/v0.1/coco2017labels-segments.zip) 
+Downloading the compiled Yolo v7 model and its less complex version (not used in the final/production version)
 
-Single GPU training
 
-``` shell
-# train p5 models
-python train.py --workers 8 --device 0 --batch-size 32 --data data/coco.yaml --img 640 640 --cfg cfg/training/yolov7.yaml --weights '' --name yolov7 --hyp data/hyp.scratch.p5.yaml
-
-# train p6 models
-python train_aux.py --workers 8 --device 0 --batch-size 16 --data data/coco.yaml --img 1280 1280 --cfg cfg/training/yolov7-w6.yaml --weights '' --name yolov7-w6 --hyp data/hyp.scratch.p6.yaml
+```python
+yolo_v7 = "https://github.com/WongKinYiu/yolov7/releases/download/v0.1/yolov7_training.pt"
+yolo_v7_tiny = "https://github.com/WongKinYiu/yolov7/releases/download/v0.1/yolov7-tiny.pt"
+r = requests.get(yolo_v7)
+with open('./yolov7/yolov7.pt', "wb") as f:
+    f.write(r.content)
+r = requests.get(yolo_v7_tiny)
+with open('./yolov7/yolov7_tiny.pt', "wb") as f:
+    f.write(r.content)
 ```
 
-Multiple GPU training
+## Dataset import
+The following cell will download the dataset from a Google drive url. In case the url has expired you can generate a new one from the commented Kaggle link (second line of code).  
+After the dataset has been downloaded, all the classes described in the `data.yaml` file will be parsed for later use and then printed.
 
-``` shell
-# train p5 models
-python -m torch.distributed.launch --nproc_per_node 4 --master_port 9527 train.py --workers 8 --device 0,1,2,3 --sync-bn --batch-size 128 --data data/coco.yaml --img 640 640 --cfg cfg/training/yolov7.yaml --weights '' --name yolov7 --hyp data/hyp.scratch.p5.yaml
 
-# train p6 models
-python -m torch.distributed.launch --nproc_per_node 8 --master_port 9527 train_aux.py --workers 8 --device 0,1,2,3,4,5,6,7 --sync-bn --batch-size 128 --data data/coco.yaml --img 1280 1280 --cfg cfg/training/yolov7-w6.yaml --weights '' --name yolov7-w6 --hyp data/hyp.scratch.p6.yaml
+```python
+obj_detection_dataset_url = "https://storage.googleapis.com/kaggle-data-sets/1043676/3161771/bundle/archive.zip?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=gcp-kaggle-com%40kaggle-161607.iam.gserviceaccount.com%2F20230511%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20230511T201858Z&X-Goog-Expires=259200&X-Goog-SignedHeaders=host&X-Goog-Signature=96cccaa097f4ee5911ef388fc1c5dddfdc82022539f4cbbc2d81bd012cbeff718c7fe226e1cba6f5992fcf266895028b45e8467790903cf0a0de70836dcbc7c80b075b1162243cb78cddd22d7c16c4111c95c06c862f9b6ba0a6b26b546d1b8947f537a7ff5ccc37b5cf33872a3338386ca922bfb0000dce2b083201a6afc92b50e8deac96a0ead798488c2c964b1887f0505e16fab6134962182b4f614f4e6065f91f14788a2768b14a5f326ad3603e2d1b66deb8b119e7646c8dde6724c27fc775beda4892a47f0c2b75f1db50bd92b48d5b8707f1c78ab766a0ece27e03436f358f9f7d46ab8fc464037b35fec66fd7ee0488d5ae2d5399158fc5a54147d1"
+#"https://drive.google.com/uc?export=download&id=1GOJ9REocmncYz5Fc_bXgF3vb313EJrsh"
+#"https://www.kaggle.com/datasets/andy8744/playing-cards-object-detection-dataset/download?datasetVersionNumber=4"
+
+if(os.path.exists("./yolov7/dataset") == False):
+    r = requests.get(obj_detection_dataset_url)
+    z = zipfile.ZipFile(io.BytesIO(r.content))
+    z.extractall("./yolov7/dataset")
+    
+from yaml.loader import SafeLoader
+classes = []
+# Open the file and load the file
+with open('./yolov7/dataset/data.yaml') as f:
+    classes = yaml.load(f, Loader=SafeLoader)["names"]
+print("Total classes: " + str(len(classes)))
+print("Classes: " + str(classes))
 ```
 
-## Transfer learning
+    Total classes: 52
+    Classes: ['10c', '10d', '10h', '10s', '2c', '2d', '2h', '2s', '3c', '3d', '3h', '3s', '4c', '4d', '4h', '4s', '5c', '5d', '5h', '5s', '6c', '6d', '6h', '6s', '7c', '7d', '7h', '7s', '8c', '8d', '8h', '8s', '9c', '9d', '9h', '9s', 'Ac', 'Ad', 'Ah', 'As', 'Jc', 'Jd', 'Jh', 'Js', 'Kc', 'Kd', 'Kh', 'Ks', 'Qc', 'Qd', 'Qh', 'Qs']
+    
 
-[`yolov7_training.pt`](https://github.com/WongKinYiu/yolov7/releases/download/v0.1/yolov7_training.pt) [`yolov7x_training.pt`](https://github.com/WongKinYiu/yolov7/releases/download/v0.1/yolov7x_training.pt) [`yolov7-w6_training.pt`](https://github.com/WongKinYiu/yolov7/releases/download/v0.1/yolov7-w6_training.pt) [`yolov7-e6_training.pt`](https://github.com/WongKinYiu/yolov7/releases/download/v0.1/yolov7-e6_training.pt) [`yolov7-d6_training.pt`](https://github.com/WongKinYiu/yolov7/releases/download/v0.1/yolov7-d6_training.pt) [`yolov7-e6e_training.pt`](https://github.com/WongKinYiu/yolov7/releases/download/v0.1/yolov7-e6e_training.pt)
+### Important
+> The following steps can be skipped if you want to use the already trained model, otherwise be aware that the training phase can require up to 4 hours to complete (tested on an RTX 4080).
 
-Single GPU finetuning for custom dataset
+## Remove roboflow junk from file names
+The dataset creator used roboflow to generate both the labels and the images, so we have to strip such files from unneeded information, especially in their files name.
 
-``` shell
-# finetune p5 models
-python train.py --workers 8 --device 0 --batch-size 32 --data data/custom.yaml --img 640 640 --cfg cfg/training/yolov7-custom.yaml --weights 'yolov7_training.pt' --name yolov7-custom --hyp data/hyp.scratch.custom.yaml
 
-# finetune p6 models
-python train_aux.py --workers 8 --device 0 --batch-size 16 --data data/custom.yaml --img 1280 1280 --cfg cfg/training/yolov7-w6-custom.yaml --weights 'yolov7-w6_training.pt' --name yolov7-w6-custom --hyp data/hyp.scratch.custom.yaml
+```python
+import os 
+
+# remove roboflow extra junk
+
+count = 0
+for i in sorted(os.listdir('./yolov7/dataset/train/labels')):
+    if count >=3:
+        count = 0
+    count += 1
+    if i[0] == '.':
+        continue
+    j = i.split('_')
+    dict1 = {1:'a', 2:'b', 3:'c'}
+    source = './yolov7/dataset/train/labels/'+i
+    dest = './yolov7/dataset/train/labels/'+j[0]+dict1[count]+'.txt'
+    os.rename(source, dest)
+    
+count = 0
+for i in sorted(os.listdir('./yolov7/dataset/train/images')):
+    if count >=3:
+        count = 0
+    count += 1
+    if i[0] == '.':
+        continue
+    j = i.split('_')
+    dict1 = {1:'a', 2:'b', 3:'c'}
+    source = './yolov7/dataset/train/images/'+i
+    dest = './yolov7/dataset/train/images/'+j[0]+dict1[count]+'.jpg'
+    os.rename(source, dest)
+    
+for i in sorted(os.listdir('./yolov7/dataset/valid/labels')):
+    if i[0] == '.':
+        continue
+    j = i.split('_')
+    source = './yolov7/dataset/valid/labels/'+i
+    dest = './yolov7/dataset/valid/labels/'+j[0]+'.txt'
+    os.rename(source, dest)
+    
+for i in sorted(os.listdir('./yolov7/dataset/valid/images')):
+    if i[0] == '.':
+        continue
+    j = i.split('_')
+    source = './yolov7/dataset/valid/images/'+i
+    dest = './yolov7/dataset/valid/images/'+j[0]+'.jpg'
+    os.rename(source, dest)
+for i in sorted(os.listdir('./yolov7/dataset/test/labels')):
+    if i[0] == '.':
+        continue
+    j = i.split('_')
+    source = './yolov7/dataset/test/labels/'+i
+    dest = './yolov7/dataset/test/labels/'+j[0]+'.txt'
+    os.rename(source, dest)
+    
+for i in sorted(os.listdir('./yolov7/dataset/test/images')):
+    if i[0] == '.':
+        continue
+    j = i.split('_')
+    source = './yolov7/dataset/test/images/'+i
+    dest = './yolov7/dataset/test/images/'+j[0]+'.jpg'
+    os.rename(source, dest)
 ```
 
-## Re-parameterization
+## Train the dataset
 
-See [reparameterization.ipynb](tools/reparameterization.ipynb)
+To train the dataset we use the following parameters:
+- workers: 8, adjust to the number of CPU cores
+- device: 0, where 0 is the id of the GPU
+- batch size: 32
+- epochs: 100
+- img: 416 416, the size of the images of the dataset
+- hyp: data/hyp.scratch.custom.yaml, the file containing the hyperparameters to use
+- name: yolov7-custom, the name to use to save the trained model
+- weights: yolov7.pt, the weights to start from
 
-## Inference
 
-On video:
-``` shell
-python detect.py --weights yolov7.pt --conf 0.25 --img-size 640 --source yourvideo.mp4
+```python
+!python .//yolov7//train.py --workers 8 --device 0 --batch-size 32 --epochs 100 --img 416 416 --hyp data//hyp.scratch.custom.yaml --name yolov7-custom --weights yolov7.pt
 ```
 
-On image:
-``` shell
-python detect.py --weights yolov7.pt --conf 0.25 --img-size 640 --source inference/images/horses.jpg
+After the training we can run the model to detect the cards on different sources. In the first case we are providing a video while in the second case we are using the webcam feed stream.
+
+
+```python
+!yt-dlp --format mp4 "https://youtu.be/koxA7TqdNWk"
+!python .//yolov7//detect.py --weights .//yolov7//runs//train//yolov7-custom//weights//best.pt --conf 0.5 --img-size 1280 --source "videotest [koxA7TqdNWk].mp4" --view-img --no-trace 
 ```
 
-<div align="center">
-    <a href="./">
-        <img src="./figure/horses_prediction.jpg" width="59%"/>
-    </a>
-</div>
 
-
-## Export
-
-**Pytorch to CoreML (and inference on MacOS/iOS)** <a href="https://colab.research.google.com/github/WongKinYiu/yolov7/blob/main/tools/YOLOv7CoreML.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"></a>
-
-**Pytorch to ONNX with NMS (and inference)** <a href="https://colab.research.google.com/github/WongKinYiu/yolov7/blob/main/tools/YOLOv7onnx.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"></a>
-```shell
-python export.py --weights yolov7-tiny.pt --grid --end2end --simplify \
-        --topk-all 100 --iou-thres 0.65 --conf-thres 0.35 --img-size 640 640 --max-wh 640
+```python
+!python .//yolov7//detect.py --weights .//yolov7//runs//train//yolov7-custom//weights//best.pt --conf 0.5 --img-size 1280 --source 0 --view-img --no-trace 
 ```
 
-**Pytorch to TensorRT with NMS (and inference)** <a href="https://colab.research.google.com/github/WongKinYiu/yolov7/blob/main/tools/YOLOv7trt.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"></a>
+## Test evaluation
 
-```shell
-wget https://github.com/WongKinYiu/yolov7/releases/download/v0.1/yolov7-tiny.pt
-python export.py --weights ./yolov7-tiny.pt --grid --end2end --simplify --topk-all 100 --iou-thres 0.65 --conf-thres 0.35 --img-size 640 640
-git clone https://github.com/Linaom1214/tensorrt-python.git
-python ./tensorrt-python/export.py -o yolov7-tiny.onnx -e yolov7-tiny-nms.trt -p fp16
+
+```python
+# Load the image
+image_path = './yolov7/runs/train/yolov7-custom/results.png'
+with open(image_path, 'rb') as f:
+    image = f.read()
+
+# Create the image widget
+image_widget = widgets.Image(
+    value=image, 
+    format='png',
+    width=1920
+)
+display(image_widget)
 ```
 
-**Pytorch to TensorRT another way** <a href="https://colab.research.google.com/gist/AlexeyAB/fcb47ae544cf284eb24d8ad8e880d45c/yolov7trtlinaom.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"></a> <details><summary> <b>Expand</b> </summary>
+
+    Image(value=b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\t`\x00\x00\x04\xb0\x08\x06\x00\x00\x00\x7f\xa4q\x81\…
 
 
-```shell
-wget https://github.com/WongKinYiu/yolov7/releases/download/v0.1/yolov7-tiny.pt
-python export.py --weights yolov7-tiny.pt --grid --include-nms
-git clone https://github.com/Linaom1214/tensorrt-python.git
-python ./tensorrt-python/export.py -o yolov7-tiny.onnx -e yolov7-tiny-nms.trt -p fp16
+The graphs shown in the previous cell were generated directly from the implementation of Yolo 7 that was used. Of particular interest are the precision, recall, and mAP graphs, both with an IoU threshold of 0.5 and 0.95.
 
-# Or use trtexec to convert ONNX to TensorRT engine
-/usr/src/tensorrt/bin/trtexec --onnx=yolov7-tiny.onnx --saveEngine=yolov7-tiny-nms.trt --fp16
+The model converged around the 30th epoch, but we continued training up to 100 epochs to verify any potential improvements. The mAP improved slightly, but there were no issues of overfitting, so overall the subsequent epochs were not considered useless.
+
+## Score evaluation algorithm
+This algorithm will return a tuple of two elements, the first element is an integer between 1 and 10 representing the point value of the hand and the second element is the highest card in case of tie-breaker.
+The point values are:
+- 10 for Straight Flush
+- 8 for Four of a Kind
+- 7 for Full House
+- 6 for Flush
+- 5 for Straight
+- 4 for Three of a Kind
+- 3 for Two Pairs
+- 2 for One Pair
+- 1 for High Card
+
+The expected input for this algorithm is a list of five strings, where each string represents a poker card in the format of "value suit". The value can be one of the following: '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A'. The suit can be one of the following: 'C' for Clubs, 'D' for Diamonds, 'H' for Hearts, 'S' for Spades.
+```python
+cards = ["2 H", "3 H", "4 H", "5 H", "6 H"]
+poker_hand(cards)
 ```
 
-</details>
 
-Tested with: Python 3.7.13, Pytorch 1.12.0+cu113
+```python
+import collections
 
-## Pose estimation
-
-[`code`](https://github.com/WongKinYiu/yolov7/tree/pose) [`yolov7-w6-pose.pt`](https://github.com/WongKinYiu/yolov7/releases/download/v0.1/yolov7-w6-pose.pt)
-
-See [keypoint.ipynb](https://github.com/WongKinYiu/yolov7/blob/main/tools/keypoint.ipynb).
-
-<div align="center">
-    <a href="./">
-        <img src="./figure/pose.png" width="39%"/>
-    </a>
-</div>
-
-
-## Instance segmentation
-
-[`code`](https://github.com/WongKinYiu/yolov7/tree/mask) [`yolov7-mask.pt`](https://github.com/WongKinYiu/yolov7/releases/download/v0.1/yolov7-mask.pt)
-
-See [instance.ipynb](https://github.com/WongKinYiu/yolov7/blob/main/tools/instance.ipynb).
-
-<div align="center">
-    <a href="./">
-        <img src="./figure/mask.png" width="59%"/>
-    </a>
-</div>
-
-## Instance segmentation
-
-[`code`](https://github.com/WongKinYiu/yolov7/tree/u7/seg) [`yolov7-seg.pt`](https://github.com/WongKinYiu/yolov7/releases/download/v0.1/yolov7-seg.pt)
-
-YOLOv7 for instance segmentation (YOLOR + YOLOv5 + YOLACT)
-
-| Model | Test Size | AP<sup>box</sup> | AP<sub>50</sub><sup>box</sup> | AP<sub>75</sub><sup>box</sup> | AP<sup>mask</sup> | AP<sub>50</sub><sup>mask</sup> | AP<sub>75</sub><sup>mask</sup> |
-| :-- | :-: | :-: | :-: | :-: | :-: | :-: | :-: |
-| **YOLOv7-seg** | 640 | **51.4%** | **69.4%** | **55.8%** | **41.5%** | **65.5%** | **43.7%** |
-
-## Anchor free detection head
-
-[`code`](https://github.com/WongKinYiu/yolov7/tree/u6) [`yolov7-u6.pt`](https://github.com/WongKinYiu/yolov7/releases/download/v0.1/yolov7-u6.pt)
-
-YOLOv7 with decoupled TAL head (YOLOR + YOLOv5 + YOLOv6)
-
-| Model | Test Size | AP<sup>val</sup> | AP<sub>50</sub><sup>val</sup> | AP<sub>75</sub><sup>val</sup> |
-| :-- | :-: | :-: | :-: | :-: |
-| **YOLOv7-u6** | 640 | **52.6%** | **69.7%** | **57.3%** |
-
-
-## Citation
-
-```
-@article{wang2022yolov7,
-  title={{YOLOv7}: Trainable bag-of-freebies sets new state-of-the-art for real-time object detectors},
-  author={Wang, Chien-Yao and Bochkovskiy, Alexey and Liao, Hong-Yuan Mark},
-  journal={arXiv preprint arXiv:2207.02696},
-  year={2022}
+points = {
+    10: "Straight flush",
+    8: "Four of a kind",
+    7: "Full house",
+    6: "Flush",
+    5: "Straight",
+    4: "Three of a kind",
+    3: "Two pairs",
+    2: "One pair",
+    1: "High card"
 }
+
+def poker_hand(cards):
+    # Create a dictionary to store the count of each card value
+    card_count = collections.defaultdict(int)
+    for card in cards:
+        value = card[0]
+        if value == 'T':
+            value = '10'
+        elif value == 'J':
+            value = '11'
+        elif value == 'Q':
+            value = '12'
+        elif value == 'K':
+            value = '13'
+        elif value == 'A':
+            value = '14'
+        card_count[value] += 1
+    # Check for a flush (all cards are the same suit)
+    flush = all(card[2] == cards[0][2] for card in cards)
+    # Check for a straight (cards are in sequential order)
+    straight = (max([int(x) for x in card_count.keys()]) - min([int(x) for x in card_count.keys()]) == 4) and (len(card_count) == 5)
+    # Check for a straight flush (flush and straight)
+    straight_flush = flush and straight
+    # Check for four of a kind
+    four_of_a_kind = any(count == 4 for count in card_count.values())
+    # Check for three of a kind
+    three_of_a_kind = any(count == 3 for count in card_count.values())
+    # Check for a full house (three of a kind and one pair)
+    full_house = three_of_a_kind and any(count == 2 for count in card_count.values())
+    # Check for two pairs
+    two_pairs = len([count for count in card_count.values() if count == 2]) == 2
+    # Check for one pair
+    one_pair = len([count for count in card_count.values() if count == 2]) == 1
+    if straight_flush:
+        return (points[10], max(card_count.keys()))
+    elif four_of_a_kind:
+        return (points[8], max(card_count, key=lambda x: card_count[x]))
+    elif full_house:
+        return (points[7], max(card_count, key=lambda x: card_count[x]))
+    elif flush:
+        return (points[6], max(card_count.keys()))
+    elif straight:
+        return (points[5], max(card_count.keys()))
+    elif three_of_a_kind:
+        return (points[4], max(card_count, key=lambda x: card_count[x]))
+    elif two_pairs:
+        return (points[3], max(card_count, key=lambda x: card_count[x]))
+    elif one_pair:
+        return (points[2], max(card_count, key=lambda x: card_count[x]))
+    else:
+        return (points[1], max(card_count.keys()))
 ```
 
+You can select a photo of a poker hand to test out the model:
+
+
+```python
+uploader = widgets.FileUpload(multiple=False)
+display(widgets.HBox([uploader]))
 ```
-@article{wang2022designing,
-  title={Designing Network Design Strategies Through Gradient Path Analysis},
-  author={Wang, Chien-Yao and Liao, Hong-Yuan Mark and Yeh, I-Hau},
-  journal={arXiv preprint arXiv:2211.04800},
-  year={2022}
-}
+
+
+    HBox(children=(FileUpload(value=(), description='Upload'),))
+
+
+
+```python
+fileName = list(uploader.value[0].items())[0][1]
+content = list(uploader.value[0].items())[3][1]
+widgets.Image(value=content)
 ```
 
 
-## Teaser
-
-Yolov7-semantic & YOLOv7-panoptic & YOLOv7-caption
-
-<div align="center">
-    <a href="./">
-        <img src="./figure/tennis.jpg" width="24%"/>
-    </a>
-    <a href="./">
-        <img src="./figure/tennis_semantic.jpg" width="24%"/>
-    </a>
-    <a href="./">
-        <img src="./figure/tennis_panoptic.png" width="24%"/>
-    </a>
-    <a href="./">
-        <img src="./figure/tennis_caption.png" width="24%"/>
-    </a>
-</div>
 
 
-## Acknowledgements
+    Image(value=b'\xff\xd8\xff\xe0\x00\x10JFIF\x00\x01\x01\x01\x00H\x00H\x00\x00\xff\xe2\x02(ICC_PROFILE\x00\x01\x…
 
-<details><summary> <b>Expand</b> </summary>
 
-* [https://github.com/AlexeyAB/darknet](https://github.com/AlexeyAB/darknet)
-* [https://github.com/WongKinYiu/yolor](https://github.com/WongKinYiu/yolor)
-* [https://github.com/WongKinYiu/PyTorch_YOLOv4](https://github.com/WongKinYiu/PyTorch_YOLOv4)
-* [https://github.com/WongKinYiu/ScaledYOLOv4](https://github.com/WongKinYiu/ScaledYOLOv4)
-* [https://github.com/Megvii-BaseDetection/YOLOX](https://github.com/Megvii-BaseDetection/YOLOX)
-* [https://github.com/ultralytics/yolov3](https://github.com/ultralytics/yolov3)
-* [https://github.com/ultralytics/yolov5](https://github.com/ultralytics/yolov5)
-* [https://github.com/DingXiaoH/RepVGG](https://github.com/DingXiaoH/RepVGG)
-* [https://github.com/JUGGHM/OREPA_CVPR2022](https://github.com/JUGGHM/OREPA_CVPR2022)
-* [https://github.com/TexasInstruments/edgeai-yolov5/tree/yolo-pose](https://github.com/TexasInstruments/edgeai-yolov5/tree/yolo-pose)
 
-</details>
+
+```python
+decoded = cv2.imdecode(np.frombuffer(content, np.uint8), -1)
+width = decoded.shape[1]
+height = decoded.shape[0]
+max_size = max(width, height)
+print("Width: " + str(width))
+print("Height: " + str(height))
+print("If you want to use the webcam feed instead of the uploaded image please check the following checkbox:")
+checkbox = widgets.Checkbox(
+    value=False,
+    description='Use webcam',
+    disabled=False
+)
+display(checkbox)
+```
+
+    Width: 720
+    Height: 1280
+    If you want to use the webcam feed instead of the uploaded image please check the following checkbox:
+    
+
+
+    Checkbox(value=False, description='Use webcam')
+
+
+
+```python
+if(os.path.exists("./runs/detect/custom")):
+    shutil.rmtree("./runs/detect/custom")
+os.makedirs("./runs/detect/custom")
+with open("./runs/detect/custom/test.jpg", "wb") as f:
+    f.write(content)
+if(checkbox.value):
+    !python .//yolov7//detect.py --weights .//yolov7//runs//train//yolov7-custom//weights//best.pt --conf 0.5 --img-size 1280 --source 0 --view-img --no-trace 
+else:
+    !python .//yolov7//detect.py --weights .//yolov7//runs//train//yolov7-custom//weights//best.pt --save-txt --conf 0.5 --img-size {max_size} --source .//runs//detect//custom//test.jpg --name custom --exist-ok --view-img
+```
+
+    Namespace(weights=['.//yolov7//runs//train//yolov7-custom//weights//best.pt'], source='.//runs//detect//custom//test.jpg', img_size=1280, conf_thres=0.5, iou_thres=0.45, device='', view_img=True, save_txt=True, save_conf=False, nosave=False, classes=None, agnostic_nms=False, augment=False, update=False, project='runs/detect', name='custom', exist_ok=True, no_trace=False)
+    Fusing layers... 
+     Convert model to Traced-model... 
+     traced_script_module saved! 
+     model is traced! 
+    
+    1 5d, 1 6d, 1 7h, 1 8d, 1 9c, Done. (25.0ms) Inference, (4.5ms) NMS
+     The image with the result is saved in: runs\detect\custom\test.jpg
+    Done. (0.213s)
+    
+
+    YOLOR  2023-5-11 torch 1.13.1+cu116 CUDA:0 (NVIDIA GeForce RTX 4080, 16375.375MB)
+    
+    C:\Users\filip\anaconda3\envs\visione\lib\site-packages\torch\functional.py:504: UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at ..\aten\src\ATen\native\TensorShape.cpp:3191.)
+      return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]
+    Model Summary: 200 layers, 6144193 parameters, 0 gradients, 13.5 GFLOPS
+    
+
+
+```python
+df = pd.read_csv("./runs/detect/custom/labels/test.txt", delim_whitespace=True, header=None)
+objs = []
+for index, row in df.iterrows():
+    name = str(classes[int(row[0])])
+    name = name[0] + " " + str.upper(name[1])
+    if((name in objs) == False):
+        objs.append(name)
+print(objs)
+```
+
+    ['8 D', '7 H', '5 D', '9 C', '6 D']
+    
+
+
+```python
+hand = poker_hand(objs)
+print("Point: " + hand[0])
+print("Highest card value: " + str(hand[1]))
+```
+
+    Point: Straight
+    Highest card value: 9
+    
+
+## Final thoughs
+
+The Yolo v7 model outperfomed the SSD model reaching a mAP of over 95%, while SSD only topped 5%. There are still a few issues, probably related to the dataset used; in particular, the model struggles to detect the values of the cards when the photo has been taken to close to them (some background has to be visible for the model to detect cards). Another issue, which is instead caused by the scoring algorithm, is that the same card may be counted twice when all of its corners are uncovered; as a design implementation I decided not to handle it, to better showcase how the model predictions work.
