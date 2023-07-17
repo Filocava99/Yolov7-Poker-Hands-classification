@@ -1,6 +1,6 @@
 <div align="center">
   <br>
-  <h1>Yolov7 Poker Hands Classification</h1>
+  <h1>Yolov7 Poker Hands Classifier</h1>
 </div>
 <br>
 </p>
